@@ -24,6 +24,11 @@ typedef struct Node {
     struct Node* next;
 } Node;
 
+typedef struct tt{
+    int time;
+    char name[3];
+} tt;
+
 // 創建新節點
 Node* createNode(int data, Node* next) {
     Node* newNode = (Node*)malloc(sizeof(Node));
@@ -52,7 +57,7 @@ line* createline(char name[3], int target, int time, line* next) {
     return newline;
 }
 
-int solve(int x, int y,line* lines[1001], Node* station){
+int solve1(int x, int y,line* lines[1001], Node* station){
     int t;
     Node* nodeptr;
     int minarrive[1001];
@@ -88,15 +93,6 @@ int solve(int x, int y,line* lines[1001], Node* station){
         lineptr1 = lineptr1->next;
     }
     while(true){
-        // nodeptr = station;
-        // while(nodeptr != NULL){
-        //     lineptr1 = lines[nodeptr->data];
-        //     if(lineptr1!=NULL){
-        //         printf("%s %d %d\n", lineptr1->name, lineptr1->target, lineptr1->awaytime);
-        //         lineptr1 = lineptr1->next;
-        //     }
-        //     nodeptr = nodeptr->next;
-        // }
         int min = intmax;
         line* target;
         nodeptr = station;
@@ -134,7 +130,78 @@ int solve(int x, int y,line* lines[1001], Node* station){
         return minarrive[y];
 }
 
+void next_sta(int target, char name[3],tt time[1001], line* lines[1001],int t){
+    line* lineptr = lines[target];
+    while(lineptr!=NULL){
+        if(lineptr->name[0] == name[0] && lineptr->name[1] == name[1]){
+            t = t+lineptr->time;
+            if(time[lineptr->target].time > t){
+               time[lineptr->target].time = t;
+               strcpy(time[lineptr->target].name, name);
+            }
+            if(t <= (time[lineptr->target].time+10))
+                next_sta(lineptr->target, name, time, lines, t);
+            break;
+        }
+        lineptr = lineptr->next;
+    }
+}
+
+int solve(int x, int y, tt time[1001],line* lines[1001], Node* station){
+    int t;
+    bool visited[1001];
+    Node* nodeptr;
+    line* lineptr;
+    for(int i = 0; i < 1001; i++){
+            time[i].time = intmax;
+            visited[i] = false;
+        }
+        time[x].time = 0;
+        lineptr = lines[x];
+        visited[x] = true;
+        while(lineptr != NULL){
+            time[lineptr->target].time = lineptr->time;
+            strcpy(time[lineptr->target].name, lineptr->name);
+            lineptr = lineptr->next;
+        }
+        while(true){
+            int min = intmax;
+            int target;
+            nodeptr = station;
+            while(nodeptr != NULL){
+                if(!visited[nodeptr->data] && time[nodeptr->data].time < intmax){
+                    target = nodeptr->data;
+                    min = time[nodeptr->data].time;
+                }
+                nodeptr = nodeptr->next;
+            }
+            if(min == intmax)
+                break;
+            lineptr = lines[target];
+            visited[target] = true;
+            while(lineptr != NULL){
+                if(lineptr->name[1] == time[target].name[1] && lineptr->name[0] == time[target].name[0])
+                    t = time[target].time + lineptr->time;
+                else if(isUpperCaseLetter(lineptr->name[0]))
+                    t = time[target].time + lineptr->time + 10;
+                else
+                    t = time[target].time + lineptr->time + 5;
+                next_sta(lineptr->target, lineptr->name, time, lines, t);
+                if(t < time[lineptr->target].time){
+                    time[lineptr->target].time = t;
+                    strcpy(time[lineptr->target].name, lineptr->name);
+                }
+                lineptr = lineptr->next;
+            }
+        }
+    if(time[y].time == intmax)
+        return -1;
+    else
+        return time[y].time;
+}
+
 int main(){
+    int count = 0;
     Node* station = NULL;
     line* lines[1001];
     line* lineptr;
@@ -145,7 +212,7 @@ int main(){
     char commend;
     int s, x, y, t;
     bool hasstation[1001];
-
+    tt time[1001];
     for(int i = 0 ;i < 1001; i++)
         hasstation[i] = false;
     while (scanf(" %c", &commend) != EOF) {
@@ -155,6 +222,7 @@ int main(){
                 scanf("%d %d %d", &x, 
                                 &y, 
                                 &t);
+                count++;
                 lines[x] = createline(name, y, t, lines[x]);
                 if(!hasstation[x]){
                     station = createNode(x, station);
@@ -167,7 +235,11 @@ int main(){
             }
         }else if(commend == 'Q'){
             scanf(" %d %d", &x, &y);
-            printf("%d\n", solve(x, y, lines, station));
+            if(count < 500)
+                printf("%d\n", solve1(x, y, lines, station));
+            else
+                printf("%d\n", solve(x, y, time, lines, station));
+
         }else
             break;
     }
