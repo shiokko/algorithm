@@ -57,79 +57,6 @@ line* createline(char name[3], int target, int time, line* next) {
     return newline;
 }
 
-int solve1(int x, int y,line* lines[1001], Node* station){
-    int t;
-    Node* nodeptr;
-    int minarrive[1001];
-    for(int i = 0; i < 1001; i++)
-        minarrive[i] = intmax;
-    line* lineptr1;
-    line* lineptr2;
-    nodeptr = station;
-    while(nodeptr != NULL){
-        lineptr1 = lines[nodeptr->data];
-        if(lineptr1!=NULL){
-            lineptr1->visited = false;
-            lineptr1 = lineptr1->next;
-        }
-        nodeptr = nodeptr->next;
-    }
-    lineptr1 = lines[x];
-    minarrive[x] = 0;
-    while(lineptr1 != NULL){
-        lineptr2 = lines[lineptr1->target];
-        minarrive[lineptr1->target] = lineptr1->time;
-        while(lineptr2 != NULL){
-            if(lineptr1->name[1] == lineptr2->name[1] && lineptr1->name[0] == lineptr2->name[0])
-                t = lineptr1->time;
-            else if(isUpperCaseLetter(lineptr2->name[0]))
-                t = lineptr1->time + 10;
-            else
-                t = lineptr1->time + 5;
-            lineptr2->awaytime = t;
-            lineptr2 = lineptr2->next;
-        }
-        lineptr1->visited = true;
-        lineptr1 = lineptr1->next;
-    }
-    while(true){
-        int min = intmax;
-        line* target;
-        nodeptr = station;
-        while(nodeptr != NULL){
-            lineptr1 = lines[nodeptr->data];
-            while(lineptr1 != NULL){
-                if(!lineptr1->visited && lineptr1->awaytime < intmax){
-                    target = lineptr1;
-                    min = lineptr1->awaytime;
-                }
-                lineptr1 = lineptr1->next;    
-            }
-            nodeptr = nodeptr->next;
-        }
-        if(min == intmax)
-            break;
-        lineptr1 = target;
-        lineptr1->visited = true;
-        minarrive[lineptr1->target] = minint(minarrive[lineptr1->target],lineptr1->awaytime+lineptr1->time);
-        lineptr2 = lines[lineptr1->target];
-        while(lineptr2 != NULL){
-            if(lineptr1->name[1] == lineptr2->name[1] && lineptr1->name[0] == lineptr2->name[0])
-                t = lineptr1->awaytime + lineptr1->time;
-            else if(isUpperCaseLetter(lineptr2->name[0]))
-                t = lineptr1->awaytime + lineptr1->time + 10;
-            else
-                t = lineptr1->awaytime + lineptr1->time + 5;
-            lineptr2->awaytime = minint(lineptr2->awaytime, t);
-            lineptr2 = lineptr2->next;
-        }
-    }
-    if(minarrive[y]== intmax)
-        return -1;
-    else
-        return minarrive[y];
-}
-
 void next_sta(int target, char name[3],tt time[1001], line* lines[1001],int t){
     line* lineptr = lines[target];
     while(lineptr!=NULL){
@@ -162,6 +89,7 @@ int solve(int x, int y, tt time[1001],line* lines[1001], Node* station){
         while(lineptr != NULL){
             time[lineptr->target].time = lineptr->time;
             strcpy(time[lineptr->target].name, lineptr->name);
+            next_sta(lineptr->target, lineptr->name, time, lines, lineptr->time);
             lineptr = lineptr->next;
         }
         while(true){
@@ -235,11 +163,7 @@ int main(){
             }
         }else if(commend == 'Q'){
             scanf(" %d %d", &x, &y);
-            if(count < 500)
-                printf("%d\n", solve1(x, y, lines, station));
-            else
-                printf("%d\n", solve(x, y, time, lines, station));
-
+            printf("%d\n", solve(x, y, time, lines, station));
         }else
             break;
     }
