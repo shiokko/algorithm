@@ -18,7 +18,6 @@ int isUpperCaseLetter(char ch) {
     return ch >= 'A' && ch <= 'Z';
 }
 
-
 typedef struct Node {
     int data;
     struct Node* next;
