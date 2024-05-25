@@ -6,18 +6,9 @@
 
 #define intmax 2147483647
 
-int minint(int a, int b){
-    if(a < b)
-        return a;
-    else
-        return b;
-    return 0;
-}
-
 int isUpperCaseLetter(char ch) {
     return ch >= 'A' && ch <= 'Z';
 }
-
 typedef struct Node {
     int data;
     struct Node* next;
@@ -28,7 +19,6 @@ typedef struct tt{
     char name[3];
 } tt;
 
-// 創建新節點
 Node* createNode(int data, Node* next) {
     Node* newNode = (Node*)malloc(sizeof(Node));
     newNode->data = data;
@@ -92,17 +82,17 @@ int solve(int x, int y, tt time[1001],line* lines[1001], Node* station){
             lineptr = lineptr->next;
         }
         while(true){
-            int min = intmax;
+            int mintime = intmax;
             int target;
             nodeptr = station;
             while(nodeptr != NULL){
                 if(!visited[nodeptr->data] && time[nodeptr->data].time < intmax){
                     target = nodeptr->data;
-                    min = time[nodeptr->data].time;
+                    mintime = time[nodeptr->data].time;
                 }
                 nodeptr = nodeptr->next;
             }
-            if(min == intmax)
+            if(mintime == intmax)
                 break;
             lineptr = lines[target];
             visited[target] = true;
